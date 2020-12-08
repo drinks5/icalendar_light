@@ -42,6 +42,7 @@ setup(
 
     install_requires=[
         'python-dateutil',
+        'requests'
     ],
     setup_requires=[] + (['pytest-runner'] if 'test' in sys.argv else []) + [],
 

@@ -3,8 +3,10 @@ from datetime import datetime, timedelta
 from functools import partial
 from pathlib import Path
 from typing import Generator, Union, Iterable
+import io
 
 from dateutil.tz import tzlocal
+import requests
 
 from .casters import cast_date, cast_default, cast_recurrence, cast_int
 
@@ -80,6 +82,30 @@ class Calendar:
 
         with open(f'{filepath}') as f:
             yield from func(f)
+
+    @classmethod
+    def iter_events_from_url(
+        cls,
+        url: str,
+        upcoming_days: int = None
+    ) -> Generator[Event, None, None]:
+        """Yields event objects from a url.
+
+        :param url:
+        :param upcoming_days:
+
+        """
+        if upcoming_days is None:
+            func = cls.iter_events
+
+        else:
+            func = partial(cls.iter_events_upcoming, days_forward=upcoming_days)
+
+        response = requests.get(url)
+        sio = io.StringIO()
+        sio.write(response.text)
+        sio.seek(0)
+        yield from func(sio)
 
     @classmethod
     def iter_events(cls, source: Iterable) -> Generator[Event, None, None]:
